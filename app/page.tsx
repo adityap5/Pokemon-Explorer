@@ -5,6 +5,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 
+
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-background">
@@ -22,9 +23,9 @@ export default function HomePage() {
 
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-6">
-          <SearchAndFilters />
 
           <Suspense fallback={<ListSkeleton />}>
+          <SearchAndFilters />
             <PokemonList />
           </Suspense>
         </div>
