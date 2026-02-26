@@ -4,28 +4,30 @@ import { SearchAndFilters } from "@/components/search-and-filters"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { Card } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import { FloatingPokemonBackground } from "@/components/floating-pokemon"
 
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b bg-card">
+    <div className="min-h-screen relative">
+      <FloatingPokemonBackground />
+      
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-gradient-to-b from-white/10 via-white/5 to-transparent border-b border-white/10">
         <div className="container mx-auto px-4 py-6">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Pokémon Explorer</h1>
-              <p className="text-muted-foreground mt-2">Discover, search, and favorite your favorite Pokémon</p>
+            <div className="space-y-1">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Pokémon Explorer</h1>
+              <p className="text-sm text-white/70">Discover, search, and favorite your favorite Pokémon</p>
             </div>
             <ThemeToggle />
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="space-y-6">
-
+      <main className="container mx-auto px-4 py-12 relative z-10">
+        <div className="space-y-8">
           <Suspense fallback={<ListSkeleton />}>
-          <SearchAndFilters />
+            <SearchAndFilters />
             <PokemonList />
           </Suspense>
         </div>

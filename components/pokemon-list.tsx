@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback, useRef } from "react"
 import { useSearchParams } from "next/navigation"
+import gsap from "gsap"
+import ScrollTrigger from "gsap/ScrollTrigger"
 import { PokemonCard } from "./pokemon-card"
 import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -9,6 +11,8 @@ import { Loader2, AlertCircle } from "lucide-react"
 import { fetchPokemonList, fetchPokemon, getPokemonIdFromUrl, fetchPokemonByType } from "@/lib/api"
 import type { Pokemon, PokemonListItem, SearchParams } from "@/lib/types"
 import { getFavorites } from "@/lib/favorites"
+
+gsap.registerPlugin(ScrollTrigger)
 
 interface PokemonWithId extends Pokemon {
   id: number
@@ -265,15 +269,8 @@ export function PokemonList() {
     const page = Number.parseInt(searchParams.get("page") || "1")
     setCurrentPage(page)
     loadPokemon(page, false)
-  }, [
-    searchParams.get("q"),
-    searchParams.get("type"),
-    searchParams.get("sort"),
-    searchParams.get("order"),
-    searchParams.get("page"),
-    searchParams.get("favorites"),
-    loadPokemon,
-  ])
+    // This effect runs whenever search params change, immediately triggering data fetch
+  }, [searchParams]) // Simplified to watch searchParams directly
 
   const loadMore = () => {
     loadPokemon(currentPage + 1, true)
@@ -285,11 +282,11 @@ export function PokemonList() {
 
   if (error) {
     return (
-      <Alert variant="destructive">
+      <Alert variant="destructive" className="backdrop-blur-lg bg-red-500/20 border-red-500/30">
         <AlertCircle className="h-4 w-4" />
-        <AlertDescription className="flex items-center justify-between">
+        <AlertDescription className="flex items-center justify-between text-red-200">
           <span>{error}</span>
-          <Button variant="outline" size="sm" onClick={retry}>
+          <Button variant="outline" size="sm" onClick={retry} className="bg-red-500/30 border-red-500/50 text-red-100 hover:bg-red-500/40">
             Try Again
           </Button>
         </AlertDescription>
@@ -299,12 +296,12 @@ export function PokemonList() {
 
   if (loading && pokemon.length === 0) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {Array.from({ length: 12 }).map((_, i) => (
-          <div key={i} className="bg-card rounded-lg border p-4 animate-pulse">
-            <div className="bg-muted h-48 w-full rounded mb-4" />
-            <div className="bg-muted h-6 w-3/4 rounded mb-2" />
-            <div className="bg-muted h-4 w-1/2 rounded" />
+          <div key={i} className="backdrop-blur-lg bg-white/8 border border-white/20 rounded-xl p-4 animate-pulse">
+            <div className="bg-gradient-to-br from-white/10 to-white/5 h-48 w-full rounded-lg mb-4" />
+            <div className="bg-white/10 h-6 w-3/4 rounded mb-2" />
+            <div className="bg-white/10 h-4 w-1/2 rounded" />
           </div>
         ))}
       </div>
@@ -316,36 +313,43 @@ export function PokemonList() {
     const isFiltered = params.q || params.type || params.favorites === "true"
 
     return (
-      <div className="text-center py-12">
-        <div className="text-6xl mb-4">🔍</div>
-        <h3 className="text-lg font-semibold mb-2">{isFiltered ? "No Pokemon found" : "No Pokemon available"}</h3>
-        <p className="text-muted-foreground">
+      <div className="text-center py-16 backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl">
+        <div className="text-8xl mb-4 opacity-50">🔍</div>
+        <h3 className="text-2xl font-bold mb-3 text-white">{isFiltered ? "No Pokémon found" : "No Pokémon available"}</h3>
+        <p className="text-white/60 max-w-md mx-auto">
           {isFiltered
             ? "Try adjusting your search or filters to find what you're looking for."
-            : "There are no Pokemon to display at the moment."}
+            : "There are no Pokémon to display at the moment."}
         </p>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+    <div className="space-y-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {pokemon.map((p) => (
-          <PokemonCard key={p.id} pokemon={p} />
+          <div key={p.id} data-card>
+            <PokemonCard pokemon={p} />
+          </div>
         ))}
       </div>
 
       {hasMore && (
-        <div className="flex justify-center">
-          <Button onClick={loadMore} disabled={loading} variant="outline" size="lg">
+        <div className="flex justify-center pt-8">
+          <Button 
+            onClick={loadMore} 
+            disabled={loading} 
+            className="bg-gradient-to-r from-blue-500/60 to-purple-500/60 hover:from-blue-500/80 hover:to-purple-500/80 text-white border border-white/20 px-8 py-6 text-lg rounded-xl transition-all duration-300 hover:shadow-2xl"
+            size="lg"
+          >
             {loading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Loading...
               </>
             ) : (
-              "Load More"
+              "Load More Pokémon"
             )}
           </Button>
         </div>
