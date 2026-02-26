@@ -29,7 +29,7 @@ export function PokemonList() {
 
   const ITEMS_PER_PAGE = 20
 
-  const getSearchParamsObject = (): SearchParams => {
+  const getSearchParamsObject = useCallback((): SearchParams => {
     return {
       q: searchParams.get("q") || undefined,
       type: searchParams.get("type") || undefined,
@@ -38,7 +38,7 @@ export function PokemonList() {
       page: searchParams.get("page") || undefined,
       favorites: searchParams.get("favorites") || undefined,
     }
-  }
+  }, [searchParams])
 
   const loadPokemon = useCallback(
     async (page = 1, append = false) => {
@@ -270,7 +270,14 @@ export function PokemonList() {
     setCurrentPage(page)
     loadPokemon(page, false)
     // This effect runs whenever search params change, immediately triggering data fetch
-  }, [searchParams]) // Simplified to watch searchParams directly
+  }, [
+    searchParams.get("q"),
+    searchParams.get("type"),
+    searchParams.get("sort"),
+    searchParams.get("order"),
+    searchParams.get("page"),
+    searchParams.get("favorites"),
+  ])
 
   const loadMore = () => {
     loadPokemon(currentPage + 1, true)
