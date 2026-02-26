@@ -29,19 +29,8 @@ export function PokemonList() {
 
   const ITEMS_PER_PAGE = 20
 
-  const getSearchParamsObject = useCallback((): SearchParams => {
-    return {
-      q: searchParams.get("q") || undefined,
-      type: searchParams.get("type") || undefined,
-      sort: (searchParams.get("sort") as "name" | "id" | "height" | "weight") || undefined,
-      order: (searchParams.get("order") as "asc" | "desc") || undefined,
-      page: searchParams.get("page") || undefined,
-      favorites: searchParams.get("favorites") || undefined,
-    }
-  }, [searchParams])
-
   const loadPokemon = useCallback(
-    async (page = 1, append = false) => {
+    async (page = 1, append = false, searchParamsSnapshot?: URLSearchParams) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort()
       }
@@ -53,7 +42,16 @@ export function PokemonList() {
         setLoading(true)
         setError(null)
 
-        const params = getSearchParamsObject()
+        // Use passed snapshot or current searchParams
+        const sp = searchParamsSnapshot || searchParams
+        const params: SearchParams = {
+          q: sp.get("q") || undefined,
+          type: sp.get("type") || undefined,
+          sort: (sp.get("sort") as "name" | "id" | "height" | "weight") || undefined,
+          order: (sp.get("order") as "asc" | "desc") || undefined,
+          page: sp.get("page") || undefined,
+          favorites: sp.get("favorites") || undefined,
+        }
 
         if (params.favorites === "true") {
           const favoriteIds = getFavorites()
@@ -227,7 +225,7 @@ export function PokemonList() {
         }
       }
     },
-    [], // Removed dependencies to prevent infinite loop
+    [], // Empty deps - searchParams is captured when called
   )
 
   const sortPokemon = (pokemonList: PokemonWithId[], sort: string, order?: string): PokemonWithId[] => {
@@ -268,8 +266,8 @@ export function PokemonList() {
   useEffect(() => {
     const page = Number.parseInt(searchParams.get("page") || "1")
     setCurrentPage(page)
-    loadPokemon(page, false)
-    // This effect runs whenever search params change, immediately triggering data fetch
+    // Pass current searchParams snapshot to avoid dependency issues
+    loadPokemon(page, false, searchParams)
   }, [
     searchParams.get("q"),
     searchParams.get("type"),
@@ -316,8 +314,7 @@ export function PokemonList() {
   }
 
   if (pokemon.length === 0) {
-    const params = getSearchParamsObject()
-    const isFiltered = params.q || params.type || params.favorites === "true"
+    const isFiltered = searchParams.get("q") || searchParams.get("type") || searchParams.get("favorites") === "true"
 
     return (
       <div className="text-center py-16 backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl">
